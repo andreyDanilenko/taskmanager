@@ -1,6 +1,6 @@
-import dayjs from 'dayjs';
-import { COLORS } from '../const.js';
-import { getRandomInteger } from '../utils.js';
+import * as dayjs from 'dayjs';
+import { COLORS } from '../utils.js/const.js';
+import { getRandomInteger } from '../utils.js/util.js';
 
 const generateDescription = () => {
   const descriptions = [
@@ -13,10 +13,10 @@ const generateDescription = () => {
 
   return descriptions[randomIndex];
 };
-
+// Генерация случайной даты
 const generateDate = () => {
   const isDate = Boolean(getRandomInteger(0, 1));
-
+  // Условия когда даты нет
   if (!isDate) {
     return null;
   }
@@ -26,7 +26,7 @@ const generateDate = () => {
 
   return dayjs().add(daysGap, 'day').toDate();
 };
-
+//Генерация дней повторения
 const generateRepeating = () => ({
   mo: false,
   tu: false,
@@ -45,6 +45,7 @@ const getRandomColor = () => {
 
 export const generateTask = () => {
   const dueDate = generateDate();
+  // Если даты нет, то включаются дни повторения.
   const repeating = dueDate === null
     ? generateRepeating()
     : {
