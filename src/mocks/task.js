@@ -14,7 +14,7 @@ const generateDescription = () => {
   return descriptions[randomIndex];
 };
 // Генерация случайной даты
-const generateDate = () => {
+export const generateDate = () => {
   const isDate = Boolean(getRandomInteger(0, 1));
   // Условия когда даты нет
   if (!isDate) {
