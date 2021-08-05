@@ -30,7 +30,9 @@ const boardElement = siteMainElement.querySelector('.board');
 const taskListElement = boardElement.querySelector('.board__tasks');
 
 render(taskListElement, createTaskEditTemplate(tasks[0]), 'beforeend');
-
+// math.min вернет наименьше из переданных аргументов
+// Если данные не моковые и на сервере их меньше чем мы хотим  отрисовать
+// Данная конструкция отрисует столько сколько есть
 for (let i = 1; i < Math.min(tasks.length, TASK_COUNT_PER_STEP); i++) {
   render(taskListElement, createTaskTemplate(tasks[i]), 'beforeend');
 }
