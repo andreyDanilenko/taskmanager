@@ -1,10 +1,9 @@
-import * as dayjs from 'dayjs';
-import { isTaskExpired, isTaskRepeating } from '../utils/util';
+import { isTaskExpired, isTaskRepeating, humanizeTaskDueDate, createElement } from '../utils/util';
 
-export const createTaskTemplate = (task) => {
+const createTaskTemplate = (task) => {
   const { description, color, dueDate, repeating, isArchive, isFavorite } = task;
   // Проверяет наличие даты
-  const date = dueDate !== null ? dayjs(dueDate).format('D MMMM') : '';
+  const date = dueDate !== null ? humanizeTaskDueDate(dueDate) : '';
   // Проверяет просроченость даты если результат работы функции true
   // Добавляет класс просроченой задачи
   const deadlineClassName = isTaskExpired(dueDate) ? 'card--deadline' : '';
@@ -53,3 +52,26 @@ export const createTaskTemplate = (task) => {
     </div>
   </article>`;
 };
+
+export default class TaskCard {
+  constructor(task) {
+    this._task = task;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTaskTemplate(this._task);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
