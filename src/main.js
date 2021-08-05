@@ -6,6 +6,7 @@ import { createBoardTemplate } from './view/board.js';
 import { createTaskEditTemplate } from './view/task-edit.js';
 import { generateTask } from './mocks/task.js';
 import { generateFilter } from './utils.js/filter.js';
+import { render } from './utils.js/util.js';
 
 const TASK_COUNT = 22;
 const TASK_COUNT_PER_STEP = 8;
@@ -14,10 +15,6 @@ const TASK_COUNT_PER_STEP = 8;
 //map() создает элемнт массива на каждый новый вызов функции()
 const tasks = new Array(TASK_COUNT).fill().map(generateTask);
 const filters = generateFilter(tasks);
-
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
 
 const siteMainElement = document.querySelector('.main');
 const siteHeaderElement = siteMainElement.querySelector('.main__control');
