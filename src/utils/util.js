@@ -1,16 +1,16 @@
 import dayjs from 'dayjs';
 // Простой объект передающий способ отрисовки компонента
-export const RenderPosition = {
+export const renderPosition = {
   AFTERBEGIN: 'afterbegin',
   BEFOREEND: 'beforeend',
 };
 //функция которая отрисовывает элемент в соответствующем контейнере и выбранным способом
 export const renderElement = (container, element, place) => {
   switch (place) {
-    case RenderPosition.AFTERBEGIN:
+    case renderPosition.AFTERBEGIN:
       container.prepend(element);
       break;
-    case RenderPosition.BEFOREEND:
+    case renderPosition.BEFOREEND:
       container.append(element);
       break;
   }
@@ -32,11 +32,6 @@ export const createElement = (template) => {
 // Единственный нюанс, что HTML в строке должен иметь общую обёртку,
 // то есть быть чем-то вроде <nav><a>Link 1</a><a>Link 2</a></nav>,
 // а не просто <a>Link 1</a><a>Link 2</a>
-
-
-
-
-
 
 // Функция из интернета по генерации случайного числа из диапазона
 // Источник - https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore#_random

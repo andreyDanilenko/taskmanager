@@ -1,5 +1,5 @@
-import { humanizeTaskDueDate, isTaskRepeating } from '../utils.js/util';
-import { COLORS } from '../utils.js/const';
+import { humanizeTaskDueDate, isTaskRepeating } from '../utils/util';
+import { COLORS } from '../utils/const';
 
 const createTaskEditDateTemplate = (dueDate) => (
   `<button class="card__date-deadline-toggle" type="button">

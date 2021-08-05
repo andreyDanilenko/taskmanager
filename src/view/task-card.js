@@ -1,5 +1,5 @@
 import * as dayjs from 'dayjs';
-import { isTaskExpired, isTaskRepeating } from '../utils.js/util';
+import { isTaskExpired, isTaskRepeating } from '../utils/util';
 
 export const createTaskTemplate = (task) => {
   const { description, color, dueDate, repeating, isArchive, isFavorite } = task;
