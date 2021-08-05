@@ -20,8 +20,6 @@ export const createFilterTemplate = (filterItems) => {
   const filterItemsTemplate = filterItems
     .map((filter, index) => createFilterItemTemplate(filter, index === 0))
     .join('');
-  console.log(filterItems);
-  console.log(filterItemsTemplate);
   return `<section class="main__filter filter container">
     ${filterItemsTemplate}
   </section>`;
