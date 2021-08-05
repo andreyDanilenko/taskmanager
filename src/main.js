@@ -20,6 +20,14 @@ const filters = generateFilter(tasks);
 
 const siteMainElement = document.querySelector('.main');
 const siteHeaderElement = siteMainElement.querySelector('.main__control');
+// Функция которая отрисовывает указанное кол-во карточек
+// Внутрь передаем так же карточку в активном состоянии
+const renderTask = (taskListElement, task) => {
+  const taskCardComponent = new TaskCardView(task);
+  const taskEditComponent = new TaskEditView(task);
+
+  render(taskListElement, taskCardComponent.getElement(), renderPosition.BEFOREEND)
+};
 // render(siteHeaderElement, createSiteMenuTemplate(), 'beforeend');
 // render(siteMainElement, createFilterTemplate(filters), 'beforeend');
 // Обращаемся к нашему классу обязательно c new и вызываем метод который записывает в constructor() класса соответсвующую разметку
@@ -32,12 +40,13 @@ render(boardComponent.getElement(), new SortView().getElement(), renderPosition.
 // render(taskListElement, createTaskEditTemplate(tasks[0]), 'beforeend');
 const taskListComponent = new TaskListView();
 render(boardComponent.getElement(), taskListComponent.getElement(), renderPosition.BEFOREEND)
-render(taskListComponent.getElement(), new TaskEditView(tasks[0]).getElement(), renderPosition.BEFOREEND);
+// // render(taskListComponent.getElement(), new TaskEditView(tasks[0]).getElement(), renderPosition.BEFOREEND);
 // math.min вернет наименьше из переданных аргументов
 // Если данные не моковые и на сервере их меньше чем мы хотим  отрисовать
 // Данная конструкция отрисует столько сколько есть
-for (let i = 1; i < Math.min(tasks.length, TASK_COUNT_PER_STEP); i++) {
-  render(taskListComponent.getElement(), new TaskCardView(tasks[i]).getElement(), renderPosition.BEFOREEND);
+for (let i = 0; i < Math.min(tasks.length, TASK_COUNT_PER_STEP); i++) {
+  // // render(taskListComponent.getElement(), new TaskCardView(tasks[i]).getElement(), renderPosition.BEFOREEND);
+  renderTask(taskListComponent.getElement(), tasks[i]);
 }
 
 if (tasks.length > TASK_COUNT_PER_STEP) {
@@ -52,7 +61,7 @@ if (tasks.length > TASK_COUNT_PER_STEP) {
   loadMoreButton.addEventListener('click', (evt) => {
     evt.preventDefault();
     tasks.slice(renderedTaskCount, renderedTaskCount + TASK_COUNT_PER_STEP)
-      .forEach((task) => render(taskListComponent.getElement(), new TaskCardView(task).getElement(), renderPosition.BEFOREEND));
+      .forEach((task) => renderTask(taskListComponent.getElement(), task)); // render(taskListComponent.getElement(), new TaskCardView(task).getElement(), renderPosition.BEFOREEND));
 
     renderedTaskCount += TASK_COUNT_PER_STEP;
 
