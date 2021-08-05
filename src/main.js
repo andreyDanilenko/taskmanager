@@ -1,12 +1,12 @@
-import { createSiteMenuTemplate } from './view/site-menu.js';
-import { createFilterTemplate } from './view/filter.js';
-import { createTaskTemplate } from './view/task-card.js';
-import { createLoadMoreButtonTemplate } from './view/load-more-button.js';
-import { createBoardTemplate } from './view/board.js';
-import { createTaskEditTemplate } from './view/task-edit.js';
-import { generateTask } from './mocks/task.js';
-import { generateFilter } from './utils.js/filter.js';
-import { render } from './utils.js/util.js';
+import SiteMenuView from './view/site-menu';
+import { createFilterTemplate } from './view/filter';
+import { createTaskTemplate } from './view/task-card';
+import { createLoadMoreButtonTemplate } from './view/load-more-button';
+import { createBoardTemplate } from './view/board';
+import { createTaskEditTemplate } from './view/task-edit';
+import { generateTask } from './mocks/task';
+import { generateFilter } from './utils/filter';
+import { render, renderElement, renderPosition } from './utils/util';
 
 const TASK_COUNT = 22;
 const TASK_COUNT_PER_STEP = 8;
@@ -18,8 +18,10 @@ const filters = generateFilter(tasks);
 
 const siteMainElement = document.querySelector('.main');
 const siteHeaderElement = siteMainElement.querySelector('.main__control');
-
-render(siteHeaderElement, createSiteMenuTemplate(), 'beforeend');
+console.log(new SiteMenuView().getElement());
+// render(siteHeaderElement, createSiteMenuTemplate(), 'beforeend');
+// Обращаемся к нашему классу обязательно c new и вызываем метод который записывает в constructor() класса соответсвующую разметку
+renderElement(siteHeaderElement, new SiteMenuView().getElement(), renderPosition.BEFOREEND)
 render(siteMainElement, createFilterTemplate(filters), 'beforeend');
 render(siteMainElement, createBoardTemplate(), 'beforeend');
 
