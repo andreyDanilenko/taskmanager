@@ -5,7 +5,7 @@ export const renderPosition = {
   BEFOREEND: 'beforeend',
 };
 //функция которая отрисовывает элемент в соответствующем контейнере и выбранным способом
-export const renderElement = (container, element, place) => {
+export const render = (container, element, place) => {
   switch (place) {
     case renderPosition.AFTERBEGIN:
       container.prepend(element);
@@ -16,9 +16,9 @@ export const renderElement = (container, element, place) => {
   }
 };
 
-export const render = (container, template, place) => { // Испльзовалась для отрисовки и редактирования компонетов
-  container.insertAdjacentHTML(place, template);
-};
+// export const render = (container, template, place) => { // Испльзовалась для отрисовки и редактирования компонетов
+//   container.insertAdjacentHTML(place, template);        // Обычная функция с разметкой
+// };
 // Принцип работы прост:
 // 1. создаём пустой div-блок
 // 2. берём HTML в виде строки и вкладываем в этот div-блок, превращая в DOM-элемент
