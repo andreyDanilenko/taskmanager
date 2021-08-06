@@ -18,7 +18,6 @@ const TASK_COUNT_PER_STEP = 8;
 //map() создает элемнт массива на каждый новый вызов функции()
 const tasks = new Array(TASK_COUNT).fill().map(generateTask);
 const filters = generateFilter(tasks);
-
 const siteMainElement = document.querySelector('.main');
 const siteHeaderElement = siteMainElement.querySelector('.main__control');
 // Функция которая отрисовывает указанное кол-во карточек
@@ -61,7 +60,6 @@ const renderTask = (taskListElement, task) => {
 // render(siteMainElement, createFilterTemplate(filters), 'beforeend');
 // Обращаемся к нашему классу обязательно c new и вызываем метод который записывает в constructor() класса соответсвующую разметку
 // render(siteMainElement, createBoardTemplate(), 'beforeend');
-
 const renderBoard = (boardContainer, boardTasks) => {
   const boardComponent = new BoardView();
   render(boardContainer, boardComponent.getElement(), renderPosition.BEFOREEND)
@@ -73,21 +71,22 @@ const renderBoard = (boardContainer, boardTasks) => {
     render(boardComponent.getElement(), new NoTaskView().getElement(), renderPosition.BEFOREEND)
     return;
   }
-  debugger
   render(boardComponent.getElement(), new SortView().getElement(), renderPosition.AFTERBEGIN);
   // render(taskListElement, createTaskEditTemplate(tasks[0]), 'beforeend');
   // // render(taskListComponent.getElement(), new TaskEditView(tasks[0]).getElement(), renderPosition.BEFOREEND);
   // math.min вернет наименьше из переданных аргументов
   // Если данные не моковые и на сервере их меньше чем мы хотим  отрисовать
   // Данная конструкция отрисует столько сколько есть
-  for (let i = 0; i < Math.min(boardTasks.length, TASK_COUNT_PER_STEP); i++) {
-    // // render(taskListComponent.getElement(), new TaskCardView(tasks[i]).getElement(), renderPosition.BEFOREEND);
-    renderTask(taskListComponent.getElement(), boardTasks[i]);
-  }
+  // for (let i = 0; i < Math.min(boardTasks.length, TASK_COUNT_PER_STEP); i++) {
+  //   // // render(taskListComponent.getElement(), new TaskCardView(tasks[i]).getElement(), renderPosition.BEFOREEND);
+  //   renderTask(taskListComponent.getElement(), boardTasks[i]);
+  // }
+  boardTasks
+    .slice(0, Math.min(tasks.length, TASK_COUNT_PER_STEP))
+    .forEach((boardTask) => renderTask(taskListComponent.getElement(), boardTask));
 
   if (boardTasks.length > TASK_COUNT_PER_STEP) {
     let renderedTaskCount = TASK_COUNT_PER_STEP;
-
     // render(boardElement, createLoadMoreButtonTemplate(), 'beforeend');
     const loadMoreButtonComponent = new LoadMoreButtonView();
     render(boardComponent.getElement(), loadMoreButtonComponent.getElement(), renderPosition.BEFOREEND)
@@ -107,7 +106,6 @@ const renderBoard = (boardContainer, boardTasks) => {
     });
   }
 }
-
 
 render(siteHeaderElement, new SiteMenuView().getElement(), renderPosition.BEFOREEND)
 render(siteMainElement, new FilterView(filters).getElement(), renderPosition.BEFOREEND)
