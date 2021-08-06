@@ -1,5 +1,22 @@
-import { humanizeTaskDueDate, isTaskRepeating } from '../utils.js/util';
-import { COLORS } from '../utils.js/const';
+import { humanizeTaskDueDate, isTaskRepeating, createElement } from '../utils/util';
+import { COLORS } from '../utils/const';
+
+const BLANK_TASK = {
+  color: COLORS[0],
+  description: '',
+  dueDate: null,
+  repeating: {
+    mo: false,
+    tu: false,
+    we: false,
+    th: false,
+    fr: false,
+    sa: false,
+    su: false,
+  },
+  isArchive: false,
+  isFavorite: false,
+};
 
 const createTaskEditDateTemplate = (dueDate) => (
   `<button class="card__date-deadline-toggle" type="button">
@@ -56,37 +73,26 @@ const createTaskEditColorsTemplate = (currentColor) => (
   >`).join('')
 );
 
-export const createTaskEditTemplate = (task = {}) => {
-  const {
-    color = 'black',
-    description = '',
-    dueDate = null,
-    repeating = {
-      mo: false,
-      tu: false,
-      we: false,
-      th: false,
-      fr: false,
-      sa: false,
-      su: false,
-    },
-  } = task;
+const createTaskEditTemplate = (task) => {
+  const { color, description, dueDate, repeating } = task;
 
   const dateTemplate = createTaskEditDateTemplate(dueDate);
+
+  const repeatingClassName = isTaskRepeating(repeating)
+    ? 'card--repeat'
+    : '';
   const repeatingTemplate = createTaskEditRepeatingTemplate(repeating);
+
   const colorsTemplate = createTaskEditColorsTemplate(color);
-  const repeatingClassName = isTaskRepeating(repeating) ? 'card--repeat' : '';
 
   return `<article class="card card--edit card--${color} ${repeatingClassName}">
     <form class="card__form" method="get">
-
       <div class="card__inner">
         <div class="card__color-bar">
           <svg class="card__color-bar-wave" width="100%" height="10">
             <use xlink:href="#wave"></use>
           </svg>
         </div>
-
         <div class="card__textarea-wrap">
           <label>
             <textarea
@@ -96,23 +102,20 @@ export const createTaskEditTemplate = (task = {}) => {
             >${description}</textarea>
           </label>
         </div>
-
         <div class="card__settings">
           <div class="card__details">
             <div class="card__dates">
-               ${dateTemplate}
-               ${repeatingTemplate}
+              ${dateTemplate}
+              ${repeatingTemplate}
             </div>
           </div>
-
           <div class="card__colors-inner">
             <h3 class="card__colors-title">Color</h3>
             <div class="card__colors-wrap">
-               ${colorsTemplate}
+              ${colorsTemplate}
             </div>
           </div>
         </div>
-
         <div class="card__status-btns">
           <button class="card__save" type="submit">save</button>
           <button class="card__delete" type="button">delete</button>
@@ -121,3 +124,26 @@ export const createTaskEditTemplate = (task = {}) => {
     </form>
   </article>`;
 };
+
+export default class TaskEdit {
+  constructor(task = BLANK_TASK) {
+    this._task = task;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTaskEditTemplate(this._task);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
