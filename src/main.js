@@ -9,7 +9,7 @@ import TaskEditView from './view/task-edit';
 import NoTaskView from './view/task-no';
 import { generateTask } from './mocks/task';
 import { generateFilter } from './utils/filter';
-import { render, RenderPosition } from './utils/render';
+import { render, RenderPosition, remove, replace } from './utils/render';
 
 const TASK_COUNT = 22;
 const TASK_COUNT_PER_STEP = 8;
@@ -28,11 +28,13 @@ const renderTask = (taskListElement, task) => {
   //Функция меняющая карточку на форму
   const replaceCardToForm = () => {
     // Метод replaceChild('тот который мы хотим подставить', 'выбранный элемент') заменяет выбранный элемент на тот который мы хотим
-    taskListElement.replaceChild(taskEditComponent.getElement(), taskCardComponent.getElement());
+    replace(taskEditComponent, taskCardComponent)
+    // taskListElement.replaceChild(taskEditComponent.getElement(), taskCardComponent.getElement());
   };
   // Функция меняющая форму на карточку
   const replaceFormToCard = () => {
-    taskListElement.replaceChild(taskCardComponent.getElement(), taskEditComponent.getElement());
+    replace(taskCardComponent, taskEditComponent)
+    // taskListElement.replaceChild(taskCardComponent.getElement(), taskEditComponent.getElement());
   };
   // При открытой форме при нажатии на клавишу ESC вызывает функцию замены формы на карточку и удаляет данный оброботчик
   const onEscKeyDown = (evt) => {
@@ -43,13 +45,14 @@ const renderTask = (taskListElement, task) => {
     }
   };
   // Событие по нажатию на кнопку EDit в закрытой карточке задачи 
-  taskCardComponent.getElement().querySelector('.card__btn--edit').addEventListener('click', () => {
+  // Передаем в метод классса компонента setEditClickHundler функцию которая будет присваиватьс\я значению callback
+  // 
+  taskCardComponent.setEditClickHandler(() => {
     replaceCardToForm();
     document.addEventListener('keydown', onEscKeyDown);
   });
   // при нажатии кнопуи типа submit форма меняется на закрытую карточку и удаляет обработчик клавиши ESC
-  taskEditComponent.getElement().querySelector('form').addEventListener('submit', (evt) => {
-    evt.preventDefault();
+  taskEditComponent.setFormSubmitHandler(() => {
     replaceFormToCard();
     document.removeEventListener('keydown', onEscKeyDown);
   });
@@ -66,7 +69,13 @@ const renderBoard = (boardContainer, boardTasks) => {
   // //render(boardComponent.getElement(), new SortView().getElement(), renderPosition.AFTERBEGIN)
   const taskListComponent = new TaskListView();
   render(boardComponent.getElement(), taskListComponent.getElement(), RenderPosition.BEFOREEND)
-
+  // По условию заглушка должна показываться,
+  // когда нет задач или все задачи в архиве.
+  // Мы могли бы написать:
+  // tasks.length === 0 || tasks.every((task) => task.isArchive)
+  // Но благодаря тому, что на пустом массиве every вернёт true,
+  // мы можем опустить "tasks.length === 0".
+  // p.s. А метод some на пустом массиве наборот вернет false
   if (boardTasks.every((task) => task.isArchive)) {
     render(boardComponent.getElement(), new NoTaskView().getElement(), RenderPosition.BEFOREEND)
     return;
@@ -91,17 +100,15 @@ const renderBoard = (boardContainer, boardTasks) => {
     const loadMoreButtonComponent = new LoadMoreButtonView();
     render(boardComponent.getElement(), loadMoreButtonComponent.getElement(), RenderPosition.BEFOREEND)
 
-    const loadMoreButton = document.querySelector('.load-more');
 
-    loadMoreButton.addEventListener('click', (evt) => {
-      evt.preventDefault();
+    loadMoreButtonComponent.setClickHandler(() => {
       boardTasks.slice(renderedTaskCount, renderedTaskCount + TASK_COUNT_PER_STEP)
         .forEach((task) => renderTask(taskListComponent.getElement(), task)); // render(taskListComponent.getElement(), new TaskCardView(task).getElement(), renderPosition.BEFOREEND));
 
       renderedTaskCount += TASK_COUNT_PER_STEP;
 
       if (renderedTaskCount >= boardTasks.length) {
-        loadMoreButton.remove();
+        remove(loadMoreButtonComponent);
       }
     });
   }

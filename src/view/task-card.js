@@ -58,9 +58,39 @@ export default class TaskCard extends AbstractView {
   constructor(task) {
     super();
     this._task = task;
+    // создаем новое значение конструктора в которую запишем результат работы метода _editClickHandler()
+    // Передаем в нее метод запускающий функцию с привязкой метода bind
+    // Метод байнд берет результат работы _editClickHandler(evt) и выполняет ее в контексте 
+    // Значение this в методе bind это ссылка на текущий экзкмпляр функции обьекта
+    this._editClickHandler = this._editClickHandler.bind(this)
+    console.log(this._editClickHandler);
   }
 
   getTemplate() {
     return createTaskTemplate(this._task);
   }
+
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    // Здесь берем наше значение из конструктора this._callback и активируем в нем функцию 
+    this._callback.editClick();
+
+  }
+  // Метод в который будет передоваться callback функция из вне
+  // Снаружи это будет new TaskCard.getElement.setEditClickHundler(()=>{ код который что-то делает})
+  setEditClickHandler(callback) {
+    // callback перадный извне присваивается свойству заимсвоного от родителя this._callback который является по умолчанию пустым обьектом
+    // Записываем callback в значение editClick // Поосле чего наше значение this._callback хранит функцию 
+    this._callback.editClick = callback;
+    // После чего свойство из конструктора класса _editClickHandler() присваивается обработчику кнопки this.getElement().querySelector('.card__btn--edit')
+    // Мы не пердаем метод bind сразу в обработчике по причине того что мы не сможем потом отменить это событие
+    // В данном случае это не грозит а вот где нибудь может возникнуть проблема например открытия попап окна наверно
+    this.getElement().querySelector('.card__btn--edit').addEventListener('click', this._editClickHandler);
+  }
 }
+// // Принцип работы метода bind
+// const bindContext = function (context, fn) {
+//   return function (...args) {
+//     return fn.call(context, ...args);
+//   };
+// };

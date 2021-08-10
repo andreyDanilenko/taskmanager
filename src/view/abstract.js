@@ -9,7 +9,9 @@ export default class Abstract {
     }
 
     this._element = null;
-    // this._callback = {};
+    // Приватное поле в котором будут хоаниться ссылки на обработчики
+    // Наприме this._editClick = this._editClick.bind(this)
+    this._callback = {};
   }
 
   getTemplate() {
