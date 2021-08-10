@@ -31,6 +31,7 @@ const createFilterTemplate = (filterItems) => {
 export default class Filters extends AbstractView {
   constructor(filters) {
     // Метод используется, при добавление или изменении свойст в потомке абстрактного класса
+    // Данный метод снаяала вызывает Родительский конструкт после чего можно добавлять свои свойства или методы
     super();
     this._filters = filters;
   }
