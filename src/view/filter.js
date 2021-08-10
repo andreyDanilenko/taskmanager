@@ -1,4 +1,4 @@
-import { createElement } from "../utils/util";
+import AbstractView from './abstract'
 
 const createFilterItemTemplate = (filter, isChecked) => {
   const { name, count } = filter;
@@ -18,8 +18,7 @@ const createFilterItemTemplate = (filter, isChecked) => {
   );
 };
 
-
-export const createFilterTemplate = (filterItems) => {
+const createFilterTemplate = (filterItems) => {
   const filterItemsTemplate = filterItems
     .map((filter, index) => createFilterItemTemplate(filter, index === 0))
     .join('');
@@ -29,25 +28,14 @@ export const createFilterTemplate = (filterItems) => {
   </section>`;
 };
 
-export default class Filter {
+export default class Filters extends AbstractView {
   constructor(filters) {
+    // Метод используется, при добавление или изменении свойст в потомке абстрактного класса
+    super();
     this._filters = filters;
-    this._element = null;
   }
 
   getTemplate() {
     return createFilterTemplate(this._filters);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
