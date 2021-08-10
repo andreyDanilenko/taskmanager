@@ -1,6 +1,6 @@
 import * as dayjs from 'dayjs';
 import { COLORS } from '../utils/const.js';
-import { getRandomInteger } from '../utils/util.js';
+import { getRandomInteger } from '../utils/common.js';
 
 const generateDescription = () => {
   const descriptions = [
