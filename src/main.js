@@ -12,6 +12,7 @@ const TASK_COUNT = 22;
 //map() создает элемнт массива на каждый новый вызов функции()
 const tasks = new Array(TASK_COUNT).fill().map(generateTask);
 const filters = generateFilter(tasks);
+console.log(tasks);
 const siteMainElement = document.querySelector('.main');
 const siteHeaderElement = siteMainElement.querySelector('.main__control');
 

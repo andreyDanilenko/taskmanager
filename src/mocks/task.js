@@ -1,6 +1,7 @@
 import * as dayjs from 'dayjs';
 import { COLORS } from '../utils/const.js';
 import { getRandomInteger } from '../utils/common.js';
+import { nanoid } from 'nanoid';
 
 const generateDescription = () => {
   const descriptions = [
@@ -59,6 +60,7 @@ export const generateTask = () => {
     };
 
   return {
+    id: nanoid(),
     description: generateDescription(),
     dueDate,
     repeating,

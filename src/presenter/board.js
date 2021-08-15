@@ -5,6 +5,7 @@ import NoTaskView from "../view/task-no";
 import TaskPresenter from './task'
 import LoadMoreButtonView from "../view/load-more-button";
 import { render, RenderPosition, remove } from "../utils/render";
+import { updateItem } from "../utils/common";
 
 const TASK_COUNT_PER_STEP = 8;
 
@@ -16,10 +17,14 @@ export default class Board {
     this._sortComponent = new SortView();
     this._taskListComponent = new TaskListView();
     this._noTaskComponet = new NoTaskView();
+    // создаем пустой обьеект для того чтобы можно было добавить любой ключ например id
+    // Чтобы наш id не превратился в строку
+    // Мы можем сделать ключем даже другой обьект
+    this._taskPresenter = new Map()
+    this._loadMoreButtonComponent = new LoadMoreButtonView()
 
-    this._loadMoreButtonComponent = new LoadMoreButtonView();
-    this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this)
-
+    this._handleTaskChange = this._handleTaskChange.bind(this);
+    this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this);
   }
   // Метод который вызывается извне, предает в себя данные, отрисовывая отх в том порядке в котором требуют методы презентера
   init(boardTasks) {
@@ -31,15 +36,45 @@ export default class Board {
 
     this._renderBoard();
   }
+  // Метод мониторит обновление какой либо задачи и обновляет данные
+  _handleTaskChange(upDateTask) {
+    // Функция в которую мы предаем наши данные а вторым аргументом задачу из этих данных
+    // В данной функции происходит замена обрабатываемого элемента и аозвращаем измененные данные
+    this._boardTasks = updateItem(this._boardTasks, upDateTask);
+    // По id в предварительно созданной Map находим задучу с которой в данный момент взаимодействует пользователь
+    // Вызываем у него метод init() Котороый обновляет отрисовку карточек
+    this._taskPresenter.get(upDateTask.id).init(upDateTask)
+  }
+
+
   // Метод для отрисовки блока сортировки
   _renderSort() {
     render(this._boardComponent, this._sortComponent, RenderPosition.AFTERBEGIN);
   }
   // Метод для отрисовки одной задачи
   _renderTask(task) {
-    const taskPresentor = new TaskPresenter(this._taskListComponent);
-    taskPresentor.init(task)
+    // Запишем создания экземпляра класса в переменную
+    const taskPresenter = new TaskPresenter(this._taskListComponent);
+    taskPresenter.init(task)
+    // Выписываем из презентора карточек значения идентификатора и добавляем в массив
+    // Получаем map c существующими id
+    this._taskPresenter.set(task.id, taskPresenter);
   }
+
+  // Метод необходим для новой отрисовки задач в случае ессли на требуется поменять порядок отрисовки карточек
+  // например при сортировке
+  // Очищаем список и отрисовываем его в том порядке в каком требуется
+  _clearTaskList() {
+    // Задача проэтерировать все существуюзий презенторы(задачи) вызвать метод destroy() описанный в презенторе (Он удаляет карточку и все чтос ней связано)
+    this._taskPresenter.forEach(presenter => presenter.destroy());
+    // Методом clear() очищаем наш обьект Map()
+    this._taskPresenter.clear();
+    // Возвращаем на начальноезначение индекс отрисовки задач
+    this._renderTaskCount = TASK_COUNT_PER_STEP;
+    remove(this._loadMoreButtonComponent);
+  }
+
+
   // Метод для отрисовки заданного количества задач
   _renderTasks(from, to) {
     this._boardTasks

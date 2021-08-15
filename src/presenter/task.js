@@ -12,6 +12,8 @@ export default class Task {
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
+
+
   }
 
   init(task) {
@@ -45,21 +47,31 @@ export default class Task {
     remove(prevTaskComponent)
     remove(prevTaskEditComponent)
   }
+
+
+
   // Методдля удаления указанной карточки
   destroy() {
     remove(this._taskComponent);
     remove(this._taskEditComponent);
   }
 
+
+
   _replaceCardToForm() {
     replace(this._taskEditComponent, this._taskComponent);
     document.addEventListener('keydown', this._escKeyDownHandler);
   };
 
+
+
   _replaceFormToCard() {
     replace(this._taskComponent, this._taskEditComponent);
     document.removeEventListener('keydown', this._escKeyDownHandler);
   };
+
+
+
 
   _escKeyDownHandler(evt) {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
@@ -68,6 +80,8 @@ export default class Task {
     }
   }
 
+
+  
   _handleEditClick() {
     this._replaceCardToForm();
   }
