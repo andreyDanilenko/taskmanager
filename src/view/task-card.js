@@ -62,19 +62,41 @@ export default class TaskCard extends AbstractView {
     // Передаем в нее метод запускающий функцию с привязкой метода bind
     // Метод байнд берет результат работы _editClickHandler(evt) и выполняет ее в контексте 
     // Значение this в методе bind это ссылка на текущий экзкмпляр функции обьекта
+    this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
+    this._archiveClickHandler = this._archiveClickHandler.bind(this);
     this._editClickHandler = this._editClickHandler.bind(this)
-    console.log(this._editClickHandler);
   }
 
   getTemplate() {
     return createTaskTemplate(this._task);
   }
 
+  _favoriteClickHandler(evt) {
+    evt.preventDefault();
+    // Здесь берем наше значение из конструктора this._callback и активируем в нем функцию 
+    this._callback.favoriteClick();
+  }
+
+  _archiveClickHandler(evt) {
+    evt.preventDefault();
+    // Здесь берем наше значение из конструктора this._callback и активируем в нем функцию 
+    this._callback.archiveClick();
+  }
+
   _editClickHandler(evt) {
     evt.preventDefault();
     // Здесь берем наше значение из конструктора this._callback и активируем в нем функцию 
     this._callback.editClick();
+  }
 
+  setFavoriteClickHandler(callback) {
+    this._callback.favoriteClick = callback;
+    this.getElement().querySelector('.card__btn--favorites').addEventListener('click', this._favoriteClickHandler);
+  }
+
+  setArchiveClickHandler(callback) {
+    this._callback.archiveClick = callback;
+    this.getElement().querySelector('.card__btn--archive').addEventListener('click', this._archiveClickHandler);
   }
   // Метод в который будет передоваться callback функция из вне
   // Снаружи это будет new TaskCard.getElement.setEditClickHundler(()=>{ код который что-то делает})

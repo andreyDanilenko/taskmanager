@@ -22,7 +22,7 @@ export default class Board {
     // Мы можем сделать ключем даже другой обьект
     this._taskPresenter = new Map()
     this._loadMoreButtonComponent = new LoadMoreButtonView()
-
+    // Обработчик передает в renderTask
     this._handleTaskChange = this._handleTaskChange.bind(this);
     this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this);
   }
@@ -37,30 +37,20 @@ export default class Board {
     this._renderBoard();
   }
   // Метод мониторит обновление какой либо задачи и обновляет данные
-  _handleTaskChange(upDateTask) {
-    // Функция в которую мы предаем наши данные а вторым аргументом задачу из этих данных
-    // В данной функции происходит замена обрабатываемого элемента и аозвращаем измененные данные
-    this._boardTasks = updateItem(this._boardTasks, upDateTask);
-    // По id в предварительно созданной Map находим задучу с которой в данный момент взаимодействует пользователь
-    // Вызываем у него метод init() Котороый обновляет отрисовку карточек
-    this._taskPresenter.get(upDateTask.id).init(upDateTask)
+  _handleTaskChange(updatedTask) {
+    this._boardTasks = updateItem(this._boardTasks, updatedTask);
+    this._taskPresenter.get(updatedTask.id).init(updatedTask);
   }
-
-
   // Метод для отрисовки блока сортировки
   _renderSort() {
     render(this._boardComponent, this._sortComponent, RenderPosition.AFTERBEGIN);
   }
   // Метод для отрисовки одной задачи
   _renderTask(task) {
-    // Запишем создания экземпляра класса в переменную
-    const taskPresenter = new TaskPresenter(this._taskListComponent);
-    taskPresenter.init(task)
-    // Выписываем из презентора карточек значения идентификатора и добавляем в массив
-    // Получаем map c существующими id
+    const taskPresenter = new TaskPresenter(this._taskListComponent, this._handleTaskChange);
+    taskPresenter.init(task);
     this._taskPresenter.set(task.id, taskPresenter);
   }
-
   // Метод необходим для новой отрисовки задач в случае ессли на требуется поменять порядок отрисовки карточек
   // например при сортировке
   // Очищаем список и отрисовываем его в том порядке в каком требуется
@@ -73,8 +63,6 @@ export default class Board {
     this._renderTaskCount = TASK_COUNT_PER_STEP;
     remove(this._loadMoreButtonComponent);
   }
-
-
   // Метод для отрисовки заданного количества задач
   _renderTasks(from, to) {
     this._boardTasks
