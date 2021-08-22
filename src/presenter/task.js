@@ -1,15 +1,24 @@
 import TaskView from '../view/task-card.js';
 import TaskEditView from '../view/task-edit.js';
 import { render, RenderPosition, replace, remove } from '../utils/render.js';
+// Для определения состаяния карточки 
+const Mode = {
+  DEFAULT: 'default',
+  EDITING: 'editing',
+}
 
 export default class Task {
-  constructor(taskListContainer, changeData) {
+  constructor(taskListContainer, changeData, changeMode) {
     this._taskListContainer = taskListContainer;
     this._changeData = changeData;
+    // Метод определяющий состояние карточки
+    this._changeMode = changeMode;
 
     this._taskComponent = null;
     this._taskEditComponent = null;
-
+    // По умалчанию все карточки находятся в состоянии по  умолчанию
+    this._mode = Mode.DEFAULT;
+    console.log(this._mode);
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleArchiveClick = this._handleArchiveClick.bind(this);
@@ -35,14 +44,16 @@ export default class Task {
       render(this._taskListContainer, this._taskComponent, RenderPosition.BEFOREEND);
       return;
     }
-
     // Проверка на наличие в DOM необходима,
     // чтобы не пытаться заменить то, что не было отрисовано
-    if (this._taskListContainer.getElement().contains(prevTaskComponent.getElement())) {
+    // if (this._taskListContainer.getElement().contains(prevTaskComponent.getElement())) {
+    //   replace(this._taskComponent, prevTaskComponent);
+    // }
+    if (this._mode = Mode.DEFAULT) {
       replace(this._taskComponent, prevTaskComponent);
     }
 
-    if (this._taskListContainer.getElement().contains(prevTaskEditComponent.getElement())) {
+    if (this._mode = Mode.EDITING) {
       replace(this._taskEditComponent, prevTaskEditComponent);
     }
 
@@ -54,15 +65,25 @@ export default class Task {
     remove(this._taskComponent);
     remove(this._taskEditComponent);
   }
+  // Метод вызывающийся в board презентере у отдельной задачи при переборе данных 
+  // делает проверку на состояние по умолчанию, в случае несовпадение переводит карточку в режим по усмолчанию
+  resetView() {
+    if (this._mode !== Mode.DEFAULT) {
+      this._replaceFormToCard();
+    }
+  }
 
   _replaceCardToForm() {
     replace(this._taskEditComponent, this._taskComponent);
     document.addEventListener('keydown', this._escKeyDownHandler);
+    this._changeMode();
+    this._mode = Mode.EDITING;
   }
 
   _replaceFormToCard() {
     replace(this._taskComponent, this._taskEditComponent);
     document.removeEventListener('keydown', this._escKeyDownHandler);
+    this._mode = Mode.DEFAULT;
   }
 
   _escKeyDownHandler(evt) {
@@ -98,10 +119,10 @@ export default class Task {
         },
       ),
     );
-    }
-
-    _handleFormSubmit(task) {
-      this._changeData(task);
-      this._replaceFormToCard();
-    }
   }
+
+  _handleFormSubmit(task) {
+    this._changeData(task);
+    this._replaceFormToCard();
+  }
+}

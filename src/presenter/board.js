@@ -25,6 +25,7 @@ export default class Board {
     // Обработчик передает в renderTask
     this._handleTaskChange = this._handleTaskChange.bind(this);
     this._handleLoadMoreButtonClick = this._handleLoadMoreButtonClick.bind(this);
+    this._handleModeChange = this._handleModeChange.bind(this);
   }
   // Метод который вызывается извне, предает в себя данные, отрисовывая отх в том порядке в котором требуют методы презентера
   init(boardTasks) {
@@ -47,14 +48,23 @@ export default class Board {
   }
   // Метод для отрисовки одной задачи
   _renderTask(task) {
-    const taskPresenter = new TaskPresenter(this._taskListComponent, this._handleTaskChange);
+    const taskPresenter = new TaskPresenter(this._taskListComponent, this._handleTaskChange, this._handleModeChange);
     taskPresenter.init(task);
     this._taskPresenter.set(task.id, taskPresenter);
+  }
+
+  // Метод для создания добавления всем презенторам состояния по умолчанию при открытии нового инпута в списке задач
+  // Он вызывается когда мы хотим открыть у задачи окно редактирования 
+  // Делает сначала проверку на всех имеющихся карточках и переводи в сосотояние по умолчанию все соответсвующие 
+  // resetView определен в презентере карточки
+  _handleModeChange() {
+    this._taskPresenter.forEach((presenter) => presenter.resetView());
   }
   // Метод необходим для новой отрисовки задач в случае ессли на требуется поменять порядок отрисовки карточек
   // например при сортировке
   // Очищаем список и отрисовываем его в том порядке в каком требуется
   _clearTaskList() {
+    debugger;
     // Задача проэтерировать все существуюзий презенторы(задачи) вызвать метод destroy() описанный в презенторе (Он удаляет карточку и все чтос ней связано)
     this._taskPresenter.forEach(presenter => presenter.destroy());
     // Методом clear() очищаем наш обьект Map()
