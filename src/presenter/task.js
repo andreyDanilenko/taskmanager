@@ -18,7 +18,6 @@ export default class Task {
     this._taskEditComponent = null;
     // По умалчанию все карточки находятся в состоянии по  умолчанию
     this._mode = Mode.DEFAULT;
-    console.log(this._mode);
     this._handleEditClick = this._handleEditClick.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleArchiveClick = this._handleArchiveClick.bind(this);
@@ -44,16 +43,12 @@ export default class Task {
       render(this._taskListContainer, this._taskComponent, RenderPosition.BEFOREEND);
       return;
     }
-    // Проверка на наличие в DOM необходима,
-    // чтобы не пытаться заменить то, что не было отрисовано
-    // if (this._taskListContainer.getElement().contains(prevTaskComponent.getElement())) {
-    //   replace(this._taskComponent, prevTaskComponent);
-    // }
-    if (this._mode = Mode.DEFAULT) {
+
+    if (this._mode === Mode.DEFAULT) {
       replace(this._taskComponent, prevTaskComponent);
     }
 
-    if (this._mode = Mode.EDITING) {
+    if (this._mode === Mode.EDITING) {
       replace(this._taskEditComponent, prevTaskEditComponent);
     }
 
