@@ -18,12 +18,12 @@ const BLANK_TASK = {
   isArchive: false,
   isFavorite: false,
 };
-
-const createTaskEditDateTemplate = (dueDate) => (
+// Меняем функцию проверки даты на флаг который будет парсить функция парсер
+const createTaskEditDateTemplate = (dueDate, isDueDate) => (
   `<button class="card__date-deadline-toggle" type="button">
-      date: <span class="card__date-status">${dueDate !== null ? 'yes' : 'no'}</span>
+      date: <span class="card__date-status">${isDueDate ? 'yes' : 'no'}</span>
     </button>
-    ${dueDate !== null ? `<fieldset class="card__date-deadline">
+    ${isDueDate ? `<fieldset class="card__date-deadline">
       <label class="card__input-deadline-wrap">
         <input
           class="card__date"
@@ -36,12 +36,12 @@ const createTaskEditDateTemplate = (dueDate) => (
     </fieldset>` : ''}
   `
 );
-
-const createTaskEditRepeatingTemplate = (repeating) => (
+// Меняем функцию проверки повторения даты на флаг который будет парсить функция парсер
+const createTaskEditRepeatingTemplate = (repeating, isRepeating) => (
   `<button class="card__repeat-toggle" type="button">
-    repeat:<span class="card__repeat-status">${isTaskRepeating(repeating) ? 'yes' : 'no'}</span>
+    repeat:<span class="card__repeat-status">${isRepeating ? 'yes' : 'no'}</span>
   </button>
-  ${isTaskRepeating(repeating) ? `<fieldset class="card__repeat-days">
+  ${isRepeating ? `<fieldset class="card__repeat-days">
     <div class="card__repeat-days-inner">
       ${Object.entries(repeating).map(([day, repeat]) => `<input
         class="visually-hidden card__repeat-day-input"
@@ -74,15 +74,15 @@ const createTaskEditColorsTemplate = (currentColor) => (
   >`).join('')
 );
 
-const createTaskEditTemplate = (task) => {
-  const { color, description, dueDate, repeating } = task;
+const createTaskEditTemplate = (data) => {
+  const { color, description, dueDate, repeating, isDueDate, isRepeating } = data;
 
-  const dateTemplate = createTaskEditDateTemplate(dueDate);
+  const dateTemplate = createTaskEditDateTemplate(dueDate, isDueDate);
 
-  const repeatingClassName = isTaskRepeating(repeating)
+  const repeatingClassName = isRepeating
     ? 'card--repeat'
     : '';
-  const repeatingTemplate = createTaskEditRepeatingTemplate(repeating);
+  const repeatingTemplate = createTaskEditRepeatingTemplate(repeating, isRepeating);
 
   const colorsTemplate = createTaskEditColorsTemplate(color);
 
@@ -129,21 +129,72 @@ const createTaskEditTemplate = (task) => {
 export default class TaskEdit extends AbstractView {
   constructor(task = BLANK_TASK) {
     super()
-    this._task = task;
+
+    // Превращаем полученную информацию с сервера в состояние для того чтобы его редактировать
+    this._data = TaskEdit.parseTaskToData(task);  // Задача к данным
+
     this._formSubmitHandler = this._formSubmitHandler.bind(this)
   }
 
   getTemplate() {
-    return createTaskEditTemplate(this._task);
+    // Отрисует состояние парсенное из актуальной информации с сервера
+    return createTaskEditTemplate(this._data);
+
   }
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._task);
+    // После редактирования состояния задачи данный колбек вызывает парсинг нашего состояния в данные 
+    // отправляя их презентору, который пересылает их в модель(сервер)
+    // Этот колбек передан из презентера задачи где параметром является здача
+    // попадающая в функцию обновления данных
+    this._callback.formSubmit(TaskEdit.parseDataToTask(this._data)); // Данные к задаче
   }
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
     this.getElement().querySelector('form').addEventListener('submit', this._formSubmitHandler);
+  }
+  // Данные функции Переводят полученную информацию с сервера в состояние которомыми управляет и редактирует пользователь
+  // И после редактирования превращает состояние в информацию для отправки на сервер(ничего не понятно пока)
+
+  // Task это информация приходящая из модели. Данная функция превращает ее в состояние Data с которым
+  // пользователь будет работать и менять его
+  static parseTaskToData(task) { // Задача к данным
+    return Object.assign(
+      {},
+      task,
+      {
+        isDueDate: task.dueDate !== null,
+        isRepeating: isTaskRepeating(task.repeating),
+      },
+    );
+  }
+  // Задача данной функции превращать измения сделанные пользователем в информацию и отправлять ее в модель
+  // например при нажатии на кнопку сохранить
+  // После нажатия кнопки сохранить данные уходять на сервер и возвращаются в наш компонент обновленными
+  static parseDataToTask(data) { // Данные к задаче
+    data = Object.assign({}, data);
+
+    if (!data.isDueDate) {
+      data.dueDate = null;
+    }
+
+    if (!data.isRepeating) {
+      data.repeating = {
+        mo: false,
+        tu: false,
+        we: false,
+        th: false,
+        fr: false,
+        sa: false,
+        su: false,
+      };
+    }
+
+    delete data.isDueDate;
+    delete data.isRepeating;
+
+    return data;
   }
 }
