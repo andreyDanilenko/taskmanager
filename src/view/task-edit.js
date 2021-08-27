@@ -141,6 +141,23 @@ export default class TaskEdit extends AbstractView {
     return createTaskEditTemplate(this._data);
 
   }
+  // метод обновления шаблона
+  updateElement() {
+    // Записываем создание нового элемента в переменную 
+    const prevElement = this.getElement();
+    // Возвращает родителя созданному элементу
+    const parent = prevElement.parentElement;
+    // Так как мы записали созданный элемент в перменную prevElement
+    // удаляем созданный элемент 
+    this.removeElement();
+
+    // меняем содержимое формы или чего нибудь еще 
+
+    // создаем новый элемент с измененными данными 
+    const newElement = this.getElement();
+    // меням предыдущий элемент на обновленный newElement
+    parent.replaceChild(newElement, prevElement);
+  }
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
