@@ -86,6 +86,8 @@ const createTaskEditTemplate = (data) => {
 
   const colorsTemplate = createTaskEditColorsTemplate(color);
 
+  const isSubmitDisabled = isRepeating && !isTaskRepeating(repeating);
+
   return `<article class="card card--edit card--${color} ${repeatingClassName}">
     <form class="card__form" method="get">
       <div class="card__inner">
@@ -118,7 +120,7 @@ const createTaskEditTemplate = (data) => {
           </div>
         </div>
         <div class="card__status-btns">
-          <button class="card__save" type="submit">save</button>
+          <button class="card__save" type="submit" ${isSubmitDisabled ? 'disabled' : ''}>save</button>
           <button class="card__delete" type="button">delete</button>
         </div>
       </div>
@@ -137,6 +139,8 @@ export default class TaskEdit extends AbstractView {
     this._descriptionTextareaHandler = this._descriptionTextareaHandler.bind(this);
     this._dueDateToggleHandler = this._dueDateToggleHandler.bind(this);
     this._repeatingToggleHandler = this._repeatingToggleHandler.bind(this);
+    this._colorChangeHandler = this._colorChangeHandler.bind(this);
+    this._repeatingChangeHandler = this._repeatingChangeHandler.bind(this);
 
     this._setInnerHandlers()
   }
@@ -161,12 +165,25 @@ export default class TaskEdit extends AbstractView {
     this.getElement()
       .querySelector('.card__text')
       .addEventListener('input', this._descriptionTextareaHandler);
+
+    if (this._data.isRepeating) {
+      this.getElement()
+        .querySelector('.card__repeat-days-inner')
+        .addEventListener('change', this._repeatingChangeHandler);
+    }
+    this.getElement()
+      .querySelector('.card__colors-wrap')
+      .addEventListener('change', this._colorChangeHandler);
   }
   // Метод оброботчика меняющий сотояние даты есть или нет
   _dueDateToggleHandler(evt) {
     evt.preventDefault();
     this.updateData({
       isDueDate: !this._data.isDueDate,
+      // Логика следующая: если выбор даты нужно показать,
+      // то есть когда "!this._data.isDueDate === true",
+      // тогда isRepeating должно быть строго false.
+      isRepeating: !this._data.isDueDate ? false : this._data.isRepeating,
     })
   }
   // Метод оброботчика менющего состояние повторения даты есть или нет
@@ -174,6 +191,8 @@ export default class TaskEdit extends AbstractView {
     evt.preventDefault();
     this.updateData({
       isRepeating: !this._data.isRepeating,
+      // Аналогично, но наоборот, для повторения
+      isDueDate: !this._data.isRepeating ? false : this._data.isDueDate,
     })
   }
   // Такой же метод как и все меняет состояние поля ввода и фиксирует его в будущем
@@ -220,6 +239,28 @@ export default class TaskEdit extends AbstractView {
     parent.replaceChild(newElement, prevElement);
 
     this.restoreHandlers();
+  }
+
+  _repeatingChangeHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      repeating: Object.assign(
+        {},
+        this._data.repeating,
+        // по нажатию на кнопку меняем ей значение checked
+        // они и так меняются по нажатию, но эта функция обновляет состояние 
+        // для того чтобы зафиксировать изменения и отправить их на сервер
+        { [evt.target.value]: evt.target.checked },
+      ),
+    });
+  }
+  // обработчик добвляется кнопке изменения цвета
+  // Берет значение инпута и подставляет его в состояние какрточки задачи
+  _colorChangeHandler(evt) {
+    evt.preventDefault();
+    this.updateData({
+      color: evt.target.value,
+    });
   }
 
   _formSubmitHandler(evt) {
@@ -277,4 +318,6 @@ export default class TaskEdit extends AbstractView {
 
     return data;
   }
+
+
 }
