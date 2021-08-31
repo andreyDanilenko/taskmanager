@@ -1,6 +1,10 @@
 import { humanizeTaskDueDate, isTaskRepeating } from '../utils/task';
 import { COLORS } from '../utils/const';
 import AbstractView from './abstract';
+import flatpickr from 'flatpickr';
+
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+
 
 const BLANK_TASK = {
   color: COLORS[0],
@@ -86,7 +90,7 @@ const createTaskEditTemplate = (data) => {
 
   const colorsTemplate = createTaskEditColorsTemplate(color);
 
-  const isSubmitDisabled = isRepeating && !isTaskRepeating(repeating);
+  const isSubmitDisabled = (isDueDate && dueDate === null) || (isRepeating && !isTaskRepeating(repeating));
 
   return `<article class="card card--edit card--${color} ${repeatingClassName}">
     <form class="card__form" method="get">
@@ -135,14 +139,17 @@ export default class TaskEdit extends AbstractView {
     // Превращаем полученную информацию с сервера в состояние для того чтобы его редактировать
     this._data = TaskEdit.parseTaskToData(task);  // Задача к данным
 
+    this._datepicker = null;
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._descriptionTextareaHandler = this._descriptionTextareaHandler.bind(this);
     this._dueDateToggleHandler = this._dueDateToggleHandler.bind(this);
     this._repeatingToggleHandler = this._repeatingToggleHandler.bind(this);
     this._colorChangeHandler = this._colorChangeHandler.bind(this);
+    this._dueDateChangeHandler = this._dueDateChangeHandler.bind(this);
     this._repeatingChangeHandler = this._repeatingChangeHandler.bind(this);
 
     this._setInnerHandlers()
+    this._setDatepicker();
   }
 
   getTemplate() {
@@ -150,8 +157,37 @@ export default class TaskEdit extends AbstractView {
     return createTaskEditTemplate(this._data);
   }
 
+  _dueDateChangeHandler([userDate]) {
+    this.updateData({
+      dueDate: userDate,
+    });
+  }
+
+  _setDatepicker() {
+    if (this._datepicker) {
+      // В случае обновления компонента удаляем вспомогательные DOM-элементы,
+      // которые создает flatpickr при инициализации
+      this._datepicker.destroy();
+      this._datepicker = null;
+    }
+
+    if (this._data.isDueDate) {
+      // flatpickr есть смысл инициализировать только в случае,
+      // если поле выбора даты доступно для заполнения
+      this._datepicker = flatpickr(
+        this.getElement().querySelector('.card__date'),
+        {
+          dateFormat: 'j F',
+          defaultDate: this._data.dueDate,
+          onChange: this._dueDateChangeHandler, // На событие flatpickr передаём наш колбэк
+        },
+      );
+    }
+  }
+
   restoreHandlers() {
     this._setInnerHandlers();
+    this._setDatepicker();
     this.setFormSubmitHandler(this._callback.formSubmit);
   }
   // Заносим обработчики кнопок по дате в отдельный метод
