@@ -12,7 +12,8 @@ import { sortTaskDown, sortTaskUp } from "../utils/task";
 const TASK_COUNT_PER_STEP = 8;
 
 export default class Board {
-  constructor(boardContainer) {
+  constructor(boardContainer, tasksModel) {
+    this._tasksModel = tasksModel;
     this._boardContainer = boardContainer;
     this._renderedTaskCount = TASK_COUNT_PER_STEP;
     this._boardComponent = new BoardView();
@@ -32,52 +33,63 @@ export default class Board {
     this._handleSortChange = this._handleSortChange.bind(this);
   }
   // Метод который вызывается извне, предает в себя данные, отрисовывая отх в том порядке в котором требуют методы презентера
-  init(boardTasks) {
-    // Метод возврращающий копию передающего в него массива для того чтобы создавать новую отричовку 
-    this._boardTasks = boardTasks.slice()
-    // 1. В отличии от сортировки по любому параметру,
-    // исходный порядок можно сохранить только одним способом -
-    // сохранив исходный массив:
-    this._sourcedBoardTasks = this._boardTasks.slice()
+  init() {
+    // // Метод возврращающий копию передающего в него массива для того чтобы создавать новую отричовку 
+    // this._boardTasks = boardTasks.slice()
+    // // 1. В отличии от сортировки по любому параметру,
+    // // исходный порядок можно сохранить только одним способом -
+    // // сохранив исходный массив:
+    // this._sourcedBoardTasks = this._boardTasks.slice()
 
     render(this._boardContainer, this._boardComponent, RenderPosition.BEFOREEND)
     render(this._boardComponent, this._taskListComponent, RenderPosition.BEFOREEND)
 
     this._renderBoard();
   }
+
+  _getTasks() {
+    switch (this._currentSortType) {
+      case SortType.DATE_UP:
+        return this._tasksModel.getTasks().slice().sort(sortTaskUp);
+      case SortType.DATE_DOWN:
+        return this._tasksModel.getTasks().slice().sort(sortTaskDown);
+    }
+    return this._tasksModel.getTasks();
+  }
   // Метод мониторит обновление какой либо задачи и обновляет данные
   _handleTaskChange(updatedTask) {
-    this._boardTasks = updateItem(this._boardTasks, updatedTask);
-    this._sourcedBoardTasks = updateItem(this._sourcedBoardTasks, updatedTask);
+    // this._boardTasks = updateItem(this._boardTasks, updatedTask);
+    // this._sourcedBoardTasks = updateItem(this._sourcedBoardTasks, updatedTask);
+    // вместо верхних перерисовок будем вызывать обновленные данные из модели
     this._taskPresenter.get(updatedTask.id).init(updatedTask);
   }
 
-  _sortTasks(sortType) {
-    // 2. Этот исходный массив задач необходим,
-    // потому что для сортировки мы будем мутировать
-    // массив в свойстве _boardTasks
-    switch (sortType) {
-      case SortType.DATE_UP:
-        this._boardTasks.sort(sortTaskUp);
-        break;
-      case SortType.DATE_DOWN:
-        this._boardTasks.sort(sortTaskDown);
-        break;
-      default:
-        // 3. А когда пользователь захочет "вернуть всё, как было",
-        // мы просто запишем в _boardTasks исходный массив
-        this._boardTasks = this._sourcedBoardTasks.slice();
-    }
+  // _sortTasks(sortType) {
+  //   // 2. Этот исходный массив задач необходим,
+  //   // потому что для сортировки мы будем мутировать
+  //   // массив в свойстве _boardTasks
+  //   switch (sortType) {
+  //     case SortType.DATE_UP:
+  //       this._boardTasks.sort(sortTaskUp);
+  //       break;
+  //     case SortType.DATE_DOWN:
+  //       this._boardTasks.sort(sortTaskDown);
+  //       break;
+  //     default:
+  //       // 3. А когда пользователь захочет "вернуть всё, как было",
+  //       // мы просто запишем в _boardTasks исходный массив
+  //       this._boardTasks = this._sourcedBoardTasks.slice();
+  //   }
 
-    this._currentSortType = sortType;
-  }
+  //   this._currentSortType = sortType;
+  // }
 
   _handleSortChange(sortType) {
     if (this._currentSortType === sortType) {
       return;
     }
-    console.log(sortType);
-    this._sortTasks(sortType)
+
+    this._currentSortType = sortType;
     this._clearTaskList()
     this._renderTaskList();
   }
@@ -108,14 +120,18 @@ export default class Board {
     // Методом clear() очищаем наш обьект Map()
     this._taskPresenter.clear();
     // Возвращаем на начальноезначение индекс отрисовки задач
-    this._renderTaskCount = TASK_COUNT_PER_STEP;
+    this._renderedTaskCount = TASK_COUNT_PER_STEP;
+
     remove(this._loadMoreButtonComponent);
   }
   // Метод для отрисовки заданного количества задач
-  _renderTasks(from, to) {
-    this._boardTasks
-      .slice(from, to)
-      .forEach(boardTask => this._renderTask(boardTask))
+  // _renderTasks(from, to) {
+  //   this._boardTasks
+  //     .slice(from, to)
+  //     .forEach(boardTask => this._renderTask(boardTask))
+  // }
+  _renderTasks(tasks) {
+    tasks.forEach((task) => this._renderTask(task));
   }
   // Методдля отрисовки при отсутствии данных
   _renderNoTasks() {
@@ -123,10 +139,16 @@ export default class Board {
   }
   // Метод отрисовки кнопки 
   _handleLoadMoreButtonClick() {
-    this._renderTasks(this._renderedTaskCount, this._renderedTaskCount + TASK_COUNT_PER_STEP);
-    this._renderedTaskCount += TASK_COUNT_PER_STEP;
+    // this._renderTasks(this._renderedTaskCount, this._renderedTaskCount + TASK_COUNT_PER_STEP);
+    // this._renderedTaskCount += TASK_COUNT_PER_STEP;
+    const taskCount = this._getTasks().length;
+    const newRenderedTaskCount = Math.min(taskCount, this._renderedTaskCount + TASK_COUNT_PER_STEP);
+    const tasks = this._getTasks().slice(this._renderedTaskCount, newRenderedTaskCount);
 
-    if (this._renderedTaskCount >= this._boardTasks.length) {
+    this._renderTasks(tasks);
+    this._renderedTaskCount = newRenderedTaskCount;
+
+    if (this._renderedTaskCount >= taskCount) {
       remove(this._loadMoreButtonComponent);
     }
   }
@@ -141,9 +163,14 @@ export default class Board {
     // Если данные не моковые и на сервере их меньше чем мы хотим  отрисовать
     // Данная конструкция отрисует столько сколько есть
     // Изначальная прорисовка от 0 до 8, если ниже то от скольки есть
-    this._renderTasks(0, Math.min(this._boardTasks.length, TASK_COUNT_PER_STEP));
+    // this._renderTasks(0, Math.min(this._boardTasks.length, TASK_COUNT_PER_STEP));
 
-    if (this._boardTasks.length > TASK_COUNT_PER_STEP) {
+    const taskCount = this._getTasks().length;
+    const tasks = this._getTasks().slice(0, Math.min(taskCount, TASK_COUNT_PER_STEP));
+
+    this._renderTasks(tasks);
+
+    if (taskCount > TASK_COUNT_PER_STEP) {
       this._renderLoadMoreButton();
     }
   }
@@ -156,7 +183,7 @@ export default class Board {
     // Но благодаря тому, что на пустом массиве every вернёт true,
     // мы можем опустить "tasks.length === 0".
     // p.s. А метод some на пустом массиве наборот вернет false
-    if (this._boardTasks.every((task) => task.taskIsArchive)) {
+    if (this._getTasks().every((task) => task.isArchive)) {
       this._renderNoTasks();
       return;
     }
